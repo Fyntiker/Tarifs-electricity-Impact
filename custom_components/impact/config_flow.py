@@ -1,15 +1,16 @@
 from homeassistant import config_entries
 import voluptuous as vol
 from homeassistant.helpers import selector
-
 from .const import DOMAIN
+from .grd_mapping import get_transport_prices
+
 
 GRD_OPTIONS = [
-    "ORES",
-    "RESa",
     "AIEG",
     "AIESH",
-    "Sibelga",
+    "ORES",
+    "RESA",
+    "REW",
 ]
 
 MONTHS = {
@@ -29,9 +30,10 @@ MONTHS = {
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    VERSION = 3
+    VERSION = 4
 
     async def async_step_user(self, user_input=None):
+
         if user_input is not None:
             return self.async_create_entry(
                 title="Tarif Impact Belgique",
@@ -63,17 +65,19 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Required("grd", default="ORES"):
                 vol.In(GRD_OPTIONS),
 
-            # Fallback transport manuel
-            vol.Required("transport_pic", default=0.12): float,
-            vol.Required("transport_medium", default=0.09): float,
-            vol.Required("transport_eco", default=0.07): float,
+            vol.Required(
+                "override_transport",
+                default=False
+            ): bool,
 
-            # Energie
+            vol.Required("transport_pic", default=0.0): float,
+            vol.Required("transport_medium", default=0.0): float,
+            vol.Required("transport_eco", default=0.0): float,
+
             vol.Required("energy_pic", default=0.25): float,
             vol.Required("energy_medium", default=0.22): float,
             vol.Required("energy_eco", default=0.18): float,
 
-            # Injection
             vol.Required("injection_price", default=0.10): float,
         })
 
