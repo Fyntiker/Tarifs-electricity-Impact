@@ -7,6 +7,7 @@ from homeassistant.core import HomeAssistant
 
 from .impact_state import ImpactState
 from .financial import ImpactFinancialModel
+from .grd_mapping import get_transport_prices
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,19 +42,30 @@ class ImpactCoordinator(DataUpdateCoordinator):
         self.state = ImpactState()
 
         # ======================
-        # CONFIG USER
+        # CONFIG UTILISATEUR
         # ======================
 
         self.import_entity = entry.data["import_entity"]
         self.export_entity = entry.data["export_entity"]
         self.start_month_of_year = entry.data["start_month_of_year"]
 
-        self.config_prices = {
-            "transport_prices": {
+        # ======================
+        # PRIX TRANSPORT VIA GRD
+        # ======================
+
+        mapped_transport = get_transport_prices(entry.data["grd"])
+
+        if mapped_transport:
+            transport_prices = mapped_transport
+        else:
+            transport_prices = {
                 "PIC": entry.data["transport_pic"],
                 "MEDIUM": entry.data["transport_medium"],
                 "ECO": entry.data["transport_eco"],
-            },
+            }
+
+        self.config_prices = {
+            "transport_prices": transport_prices,
             "energy_prices": {
                 "PIC": entry.data["energy_pic"],
                 "MEDIUM": entry.data["energy_medium"],
@@ -88,7 +100,10 @@ class ImpactCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self):
         now = datetime.now()
 
-        # Snapshots
+        # =========================
+        # SNAPSHOTS PÉRIODES
+        # =========================
+
         if now.day != self.current_day:
             self.state.take_snapshot("day")
             self.current_day = now.day
@@ -106,8 +121,12 @@ class ImpactCoordinator(DataUpdateCoordinator):
 
         bucket = resolve_bucket(now)
 
+        # =========================
         # IMPORT
+        # =========================
+
         import_state = self.hass.states.get(self.import_entity)
+
         if import_state:
             try:
                 current_import = float(import_state.state)
@@ -124,8 +143,12 @@ class ImpactCoordinator(DataUpdateCoordinator):
                         self.financial_model.apply_delta(bucket, delta, 0)
                     self.state.last_import_index = current_import
 
+        # =========================
         # EXPORT
+        # =========================
+
         export_state = self.hass.states.get(self.export_entity)
+
         if export_state:
             try:
                 current_export = float(export_state.state)
