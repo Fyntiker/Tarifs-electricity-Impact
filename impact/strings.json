@@ -1,0 +1,24 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configuration du tarif Impact",
+        "description": "Paramètres du calcul Impact",
+        "data": {
+          "import_entity": "Capteur import réseau",
+          "export_entity": "Capteur injection réseau",
+          "start_month_of_year": "Mois de début d'année",
+          "compensation_enabled": "Activer la compensation énergie",
+          "grd": "Gestionnaire de réseau (GRD)",
+          "transport_pic": "Transport - Période PIC (€ / kWh)",
+          "transport_medium": "Transport - Période MOYENNE (€ / kWh)",
+          "transport_eco": "Transport - Période ÉCO (€ / kWh)",
+          "energy_pic": "Énergie - Période PIC (€ / kWh)",
+          "energy_medium": "Énergie - Période MOYENNE (€ / kWh)",
+          "energy_eco": "Énergie - Période ÉCO (€ / kWh)",
+          "injection_price": "Prix injection (€ / kWh)"
+        }
+      }
+    }
+  }
+}
