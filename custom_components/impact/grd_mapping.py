@@ -1,35 +1,56 @@
 from datetime import date
 
 GRD_TARIFFS = {
-    "ORES": [
-        {
-            "from": date(2025, 1, 1),
-            "transport": {
-                "PIC": 0.13,
-                "MEDIUM": 0.10,
-                "ECO": 0.08,
-            }
-        },
+    "AIEG": [
         {
             "from": date(2026, 1, 1),
             "transport": {
-                "PIC": 0.14,
-                "MEDIUM": 0.11,
-                "ECO": 0.09,
+                "ECO": 0.0456,
+                "MEDIUM": 0.0982,
+                "PIC": 0.1508,
             }
         }
     ],
-
-    "Sibelga": [
+    "AIESH": [
         {
-            "from": date(2025, 1, 1),
+            "from": date(2026, 1, 1),
             "transport": {
-                "PIC": 0.15,
-                "MEDIUM": 0.12,
-                "ECO": 0.09,
+                "ECO": 0.0550,
+                "MEDIUM": 0.1228,
+                "PIC": 0.1907,
             }
         }
-    ]
+    ],
+    "ORES": [
+        {
+            "from": date(2026, 1, 1),
+            "transport": {
+                "ECO": 0.0509,
+                "MEDIUM": 0.1083,
+                "PIC": 0.1657,
+            }
+        }
+    ],
+    "RESA": [
+        {
+            "from": date(2026, 1, 1),
+            "transport": {
+                "ECO": 0.0499,
+                "MEDIUM": 0.1005,
+                "PIC": 0.1511,
+            }
+        }
+    ],
+    "REW": [
+        {
+            "from": date(2026, 1, 1),
+            "transport": {
+                "ECO": 0.0552,
+                "MEDIUM": 0.1132,
+                "PIC": 0.1711,
+            }
+        }
+    ],
 }
 
 
