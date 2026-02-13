@@ -1,0 +1,6 @@
+{
+  "name": "Belgian Impact Tariff",
+  "content_in_root": false,
+  "domains": ["impact"],
+  "homeassistant": "2025.0.0"
+}
