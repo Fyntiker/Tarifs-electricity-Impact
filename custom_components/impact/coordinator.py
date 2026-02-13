@@ -50,23 +50,22 @@ class ImpactCoordinator(DataUpdateCoordinator):
         self.start_month_of_year = entry.data["start_month_of_year"]
 
         # ======================
-        # PRIX TRANSPORT VIA GRD
+        # PRIX TRANSPORT
         # ======================
 
         mapped_transport = None
 
-if not entry.data.get("override_transport", False):
-    mapped_transport = get_transport_prices(entry.data["grd"])
+        if not entry.data.get("override_transport", False):
+            mapped_transport = get_transport_prices(entry.data["grd"])
 
-if mapped_transport:
-    transport_prices = mapped_transport
-else:
-    transport_prices = {
-        "PIC": entry.data["transport_pic"],
-        "MEDIUM": entry.data["transport_medium"],
-        "ECO": entry.data["transport_eco"],
-    }
-
+        if mapped_transport:
+            transport_prices = mapped_transport
+        else:
+            transport_prices = {
+                "PIC": entry.data["transport_pic"],
+                "MEDIUM": entry.data["transport_medium"],
+                "ECO": entry.data["transport_eco"],
+            }
 
         self.config_prices = {
             "transport_prices": transport_prices,
@@ -105,7 +104,7 @@ else:
         now = datetime.now()
 
         # =========================
-        # SNAPSHOTS PÉRIODES
+        # SNAPSHOTS
         # =========================
 
         if now.day != self.current_day:
@@ -134,7 +133,7 @@ else:
         if import_state:
             try:
                 current_import = float(import_state.state)
-            except:
+            except (ValueError, TypeError):
                 current_import = None
 
             if current_import is not None:
@@ -151,25 +150,4 @@ else:
         # EXPORT
         # =========================
 
-        export_state = self.hass.states.get(self.export_entity)
-
-        if export_state:
-            try:
-                current_export = float(export_state.state)
-            except:
-                current_export = None
-
-            if current_export is not None:
-                if self.state.last_export_index == 0:
-                    self.state.last_export_index = current_export
-                else:
-                    delta = current_export - self.state.last_export_index
-                    if delta > 0:
-                        self.state.export_energy[bucket] += delta
-                        self.financial_model.apply_delta(bucket, 0, delta)
-                    self.state.last_export_index = current_export
-
-        await self.async_save_state()
-
-        return self.state
-
+        export_state = self.hass.states_
