@@ -53,16 +53,20 @@ class ImpactCoordinator(DataUpdateCoordinator):
         # PRIX TRANSPORT VIA GRD
         # ======================
 
-        mapped_transport = get_transport_prices(entry.data["grd"])
+        mapped_transport = None
 
-        if mapped_transport:
-            transport_prices = mapped_transport
-        else:
-            transport_prices = {
-                "PIC": entry.data["transport_pic"],
-                "MEDIUM": entry.data["transport_medium"],
-                "ECO": entry.data["transport_eco"],
-            }
+if not entry.data.get("override_transport", False):
+    mapped_transport = get_transport_prices(entry.data["grd"])
+
+if mapped_transport:
+    transport_prices = mapped_transport
+else:
+    transport_prices = {
+        "PIC": entry.data["transport_pic"],
+        "MEDIUM": entry.data["transport_medium"],
+        "ECO": entry.data["transport_eco"],
+    }
+
 
         self.config_prices = {
             "transport_prices": transport_prices,
@@ -168,3 +172,4 @@ class ImpactCoordinator(DataUpdateCoordinator):
         await self.async_save_state()
 
         return self.state
+
