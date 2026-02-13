@@ -15,17 +15,6 @@ STORAGE_VERSION = 1
 STORAGE_KEY = "impact_state"
 
 
-def resolve_bucket(now: datetime) -> str:
-    hour = now.hour
-
-    if 17 <= hour < 22:
-        return "PIC"
-    elif (7 <= hour < 11) or (22 <= hour < 24) or (0 <= hour < 1):
-        return "MEDIUM"
-    else:
-        return "ECO"
-
-
 class ImpactCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry):
         super().__init__(
@@ -41,56 +30,43 @@ class ImpactCoordinator(DataUpdateCoordinator):
 
         self.state = ImpactState()
 
-        # ======================
-        # CONFIG UTILISATEUR
-        # ======================
+        self.import_entity = entry.data.get("import_entity")
+        self.export_entity = entry.data.get("export_entity")
 
-        self.import_entity = entry.data["import_entity"]
-        self.export_entity = entry.data["export_entity"]
-        self.start_month_of_year = entry.data["start_month_of_year"]
-
-        # ======================
-        # PRIX TRANSPORT
-        # ======================
+        self.start_month_of_year = entry.data.get("start_month_of_year", 1)
 
         mapped_transport = None
-
         if not entry.data.get("override_transport", False):
-            mapped_transport = get_transport_prices(entry.data["grd"])
+            mapped_transport = get_transport_prices(entry.data.get("grd"))
 
         if mapped_transport:
             transport_prices = mapped_transport
         else:
             transport_prices = {
-                "PIC": entry.data["transport_pic"],
-                "MEDIUM": entry.data["transport_medium"],
-                "ECO": entry.data["transport_eco"],
+                "PIC": entry.data.get("transport_pic", 0.0),
+                "MEDIUM": entry.data.get("transport_medium", 0.0),
+                "ECO": entry.data.get("transport_eco", 0.0),
             }
 
         self.config_prices = {
             "transport_prices": transport_prices,
             "energy_prices": {
-                "PIC": entry.data["energy_pic"],
-                "MEDIUM": entry.data["energy_medium"],
-                "ECO": entry.data["energy_eco"],
+                "PIC": entry.data.get("energy_pic", 0.0),
+                "MEDIUM": entry.data.get("energy_medium", 0.0),
+                "ECO": entry.data.get("energy_eco", 0.0),
             },
             "injection_prices": {
-                "PIC": entry.data["injection_price"],
-                "MEDIUM": entry.data["injection_price"],
-                "ECO": entry.data["injection_price"],
+                "PIC": entry.data.get("injection_price", 0.0),
+                "MEDIUM": entry.data.get("injection_price", 0.0),
+                "ECO": entry.data.get("injection_price", 0.0),
             },
-            "compensation_enabled": entry.data["compensation_enabled"],
+            "compensation_enabled": entry.data.get("compensation_enabled", False),
         }
 
         self.financial_model = ImpactFinancialModel(
             self.config_prices,
             self.state
         )
-
-        now = datetime.now()
-        self.current_day = now.day
-        self.current_month = now.month
-        self.current_year = now.year
 
     async def async_load_state(self):
         data = await self.store.async_load()
@@ -101,53 +77,4 @@ class ImpactCoordinator(DataUpdateCoordinator):
         await self.store.async_save(self.state.to_dict())
 
     async def _async_update_data(self):
-        now = datetime.now()
-
-        # =========================
-        # SNAPSHOTS
-        # =========================
-
-        if now.day != self.current_day:
-            self.state.take_snapshot("day")
-            self.current_day = now.day
-
-        if now.month != self.current_month:
-            self.state.take_snapshot("month")
-            self.current_month = now.month
-
-        if (
-            now.month == self.start_month_of_year
-            and now.year != self.current_year
-        ):
-            self.state.take_snapshot("year")
-            self.current_year = now.year
-
-        bucket = resolve_bucket(now)
-
-        # =========================
-        # IMPORT
-        # =========================
-
-        import_state = self.hass.states.get(self.import_entity)
-
-        if import_state:
-            try:
-                current_import = float(import_state.state)
-            except (ValueError, TypeError):
-                current_import = None
-
-            if current_import is not None:
-                if self.state.last_import_index == 0:
-                    self.state.last_import_index = current_import
-                else:
-                    delta = current_import - self.state.last_import_index
-                    if delta > 0:
-                        self.state.import_energy[bucket] += delta
-                        self.financial_model.apply_delta(bucket, delta, 0)
-                    self.state.last_import_index = current_import
-
-        # =========================
-        # EXPORT
-        # =========================
-
-        export_state = self.hass.states_
+        return self.state
